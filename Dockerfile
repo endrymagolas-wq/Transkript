@@ -1,5 +1,6 @@
 # Use official Python image
-FROM python:3.12-slim
+FROM python:3.12-bookworm
+ENV CACHE_BUSTER=2026-05-14-1
 
 # Set working directory
 WORKDIR /app
