@@ -55,25 +55,27 @@ async def transcribe_instagram(request: TranscribeRequest):
 
     # 1. Use yt-dlp to download the audio locally
     import tempfile
+    import glob
     
     temp_dir = tempfile.mkdtemp()
-    file_path = os.path.join(temp_dir, 'audio.mp3')
     
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
         'no_warnings': True,
-        'outtmpl': file_path,
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
+        'outtmpl': os.path.join(temp_dir, '%(id)s.%(ext)s'),
     }
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([request.url])
+            
+        # Find the downloaded file
+        downloaded_files = os.listdir(temp_dir)
+        if not downloaded_files:
+            raise Exception("No file was downloaded")
+        file_path = os.path.join(temp_dir, downloaded_files[0])
+            
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to extract audio from URL: {str(e)}")
 
