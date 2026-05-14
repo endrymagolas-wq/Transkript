@@ -53,18 +53,27 @@ async def transcribe_instagram(request: TranscribeRequest):
     if not aai.settings.api_key:
         raise HTTPException(status_code=400, detail="AssemblyAI API key is required. Get one at https://www.assemblyai.com/")
 
-    # 1. Use yt-dlp to get the audio URL
+    # 1. Use yt-dlp to download the audio locally
+    import tempfile
+    
+    temp_dir = tempfile.mkdtemp()
+    file_path = os.path.join(temp_dir, 'audio.mp3')
+    
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
         'no_warnings': True,
+        'outtmpl': file_path,
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
     }
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(request.url, download=False)
-            audio_url = info['url']
-            title = info.get('title', 'Instagram Video')
+            ydl.download([request.url])
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to extract audio from URL: {str(e)}")
 
@@ -75,7 +84,14 @@ async def transcribe_instagram(request: TranscribeRequest):
             speaker_labels=True
         )
         transcriber = aai.Transcriber()
-        transcript = transcriber.transcribe(audio_url, config=config)
+        transcript = transcriber.transcribe(file_path, config=config)
+        
+        # Cleanup
+        try:
+            os.remove(file_path)
+            os.rmdir(temp_dir)
+        except:
+            pass
         
         if transcript.status == aai.TranscriptStatus.error:
             raise HTTPException(status_code=500, detail=f"Transcription failed: {transcript.error}")
