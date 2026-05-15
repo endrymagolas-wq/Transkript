@@ -131,51 +131,57 @@ function App() {
         <p>Перетворіть Instagram Reels на текст із розподілом по спікерах</p>
       </header>
 
-      <div className="main-content" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-        <div className="left-panel" style={{ flex: '1 1 300px' }}>
-          <div className="input-container">
-            <form onSubmit={handleTranscribe}>
-              <div className="input-group">
-                <input 
-                  type="text" 
-                  placeholder="Вставте посилання на Instagram Reel..." 
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  disabled={loading}
-                />
-                <button type="submit" disabled={loading || !url}>
-                  {loading ? 'Обробка...' : 'Транскрибувати'}
-                </button>
-              </div>
-            </form>
+      <div className="input-container">
+        <form onSubmit={handleTranscribe}>
+          <div className="input-group">
+            <input 
+              type="text" 
+              placeholder="Вставте посилання на Instagram Reel..." 
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              disabled={loading}
+            />
+            <button type="submit" disabled={loading || !url}>
+              {loading ? 'Обробка...' : 'Транскрибувати'}
+            </button>
           </div>
+        </form>
+      </div>
 
-          {history.length > 0 && (
+      <div className="main-content" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        {history.length > 0 && (
+          <div className="left-panel" style={{ flex: '1 1 250px', maxWidth: '350px' }}>
             <div className="history-container" style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Історія транскрипцій</h3>
+              <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem', color: 'var(--accent)' }}>Історія транскрипцій</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                 {history.map((item, idx) => (
                   <div 
                     key={idx} 
                     onClick={() => loadFromHistory(item)}
-                    style={{ cursor: 'pointer', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid var(--glass-border)', transition: 'all 0.2s' }}
-                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                    onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.2)'}
+                    style={{ cursor: 'pointer', padding: '1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '12px', border: '1px solid var(--glass-border)', transition: 'all 0.2s' }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                      e.currentTarget.style.borderColor = 'var(--primary)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = 'rgba(0,0,0,0.3)';
+                      e.currentTarget.style.borderColor = 'var(--glass-border)';
+                    }}
                   >
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '0.3rem' }}>
-                      {new Date(item.date).toLocaleString()}
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                      {new Date(item.date).toLocaleDateString()} {new Date(item.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </div>
-                    <div style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>
                       {item.url}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="right-panel" style={{ flex: '2 1 500px' }}>
+        <div className="right-panel" style={{ flex: '2 1 500px', minWidth: '0' }}>
           {loading && (
             <div className="loader">
               <div className="spinner"></div>
@@ -184,26 +190,26 @@ function App() {
           )}
 
           {error && (
-            <div className="error-message" style={{ color: '#ff6b6b', textAlign: 'center', padding: '1rem', background: 'rgba(255,107,107,0.1)', borderRadius: '12px', marginBottom: '2rem' }}>
+            <div className="error-message" style={{ color: '#ff6b6b', textAlign: 'center', padding: '1.5rem', background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.3)', borderRadius: '16px', marginBottom: '2rem' }}>
               <strong>Помилка:</strong> {error}
             </div>
           )}
 
           {result && (
-            <div className="transcript-container">
+            <div className="transcript-container" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
               <div className="transcript-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Результат транскрипції</h2>
-                <div className="action-buttons" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button onClick={() => copyToClipboard(false)} style={{ padding: '0.6rem 1rem', fontSize: '0.9rem', background: 'rgba(255, 255, 255, 0.1)', border: '1px solid var(--glass-border)' }}>Копіювати текст</button>
-                  <button onClick={() => copyToClipboard(true)} style={{ padding: '0.6rem 1rem', fontSize: '0.9rem', background: 'linear-gradient(45deg, #10a37f, #0b7a5f)' }}>Копіювати для ChatGPT</button>
+                <h2 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-main)' }}>Результат транскрипції</h2>
+                <div className="action-buttons" style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
+                  <button onClick={() => copyToClipboard(false)} style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px' }}>Копіювати текст</button>
+                  <button onClick={() => copyToClipboard(true)} style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', background: 'linear-gradient(45deg, #10a37f, #0b7a5f)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(16, 163, 127, 0.3)' }}>Копіювати для ChatGPT</button>
                 </div>
               </div>
               
               {audioUrl && (
-                <div style={{ marginBottom: '2rem' }}>
-                  <audio ref={audioRef} controls src={audioUrl} style={{ width: '100%', borderRadius: '12px' }} />
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '0.5rem', textAlign: 'center' }}>
-                    Натисніть на таймкод біля фрази, щоб відтворити аудіо з цього моменту
+                <div style={{ marginBottom: '2.5rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+                  <audio ref={audioRef} controls src={audioUrl} style={{ width: '100%', borderRadius: '8px', outline: 'none' }} />
+                  <p style={{ fontSize: '0.85rem', color: 'var(--accent)', marginTop: '0.8rem', textAlign: 'center', fontWeight: '500' }}>
+                    💡 Натисніть на таймкод біля фрази, щоб відтворити аудіо з цього моменту
                   </p>
                 </div>
               )}
@@ -211,23 +217,27 @@ function App() {
               <div className="utterances">
                 {result.utterances && result.utterances.length > 0 ? (
                   result.utterances.map((utt, index) => (
-                    <div key={index} className={`utterance speaker-${(index % 3) + 1}`}>
-                      <div className="speaker-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                        <span className="speaker-label" style={{ margin: 0 }}>{utt.speaker}</span>
+                    <div key={index} className={`utterance speaker-${(index % 3) + 1}`} style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1rem' }}>
+                      <div className="speaker-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                        <span className="speaker-label" style={{ margin: 0, padding: '0.3rem 0.8rem', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', fontSize: '0.85rem' }}>{utt.speaker}</span>
                         <span 
                           className="timestamp" 
                           onClick={() => handleTimestampClick(utt.start)}
-                          style={{ fontSize: '0.85rem', color: 'var(--text-main)', background: 'rgba(255,255,255,0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)' }}
+                          style={{ fontSize: '0.85rem', color: 'var(--text-main)', background: 'linear-gradient(45deg, rgba(131, 58, 180, 0.3), rgba(253, 29, 29, 0.3))', padding: '0.3rem 0.8rem', borderRadius: '6px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s' }}
                           title="Відтворити з цього моменту"
+                          onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(253, 29, 29, 0.2)'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                           ▶ {formatTime(utt.start)} - {formatTime(utt.end)}
                         </span>
                       </div>
-                      <p className="text-content">{utt.text}</p>
+                      <p className="text-content" style={{ margin: 0, fontSize: '1.05rem', lineHeight: '1.6', color: 'rgba(255,255,255,0.9)' }}>{utt.text}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-content">{result.text}</p>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <p className="text-content" style={{ margin: 0, fontSize: '1.05rem', lineHeight: '1.6' }}>{result.text}</p>
+                  </div>
                 )}
               </div>
             </div>
