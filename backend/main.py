@@ -59,13 +59,17 @@ async def transcribe_instagram(request: TranscribeRequest):
     
     temp_dir = tempfile.mkdtemp()
     
+    cookie_file = os.getenv("YTDLP_COOKIE_FILE")
+    
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
         'no_warnings': True,
         'outtmpl': os.path.join(temp_dir, '%(id)s.%(ext)s'),
-        'cookiesfrombrowser': ('chrome',),
     }
+    
+    if cookie_file:
+        ydl_opts['cookiefile'] = cookie_file
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -121,12 +125,14 @@ async def transcribe_instagram(request: TranscribeRequest):
 
 @app.get("/audio_url")
 async def get_audio_url(url: str):
+    cookie_file = os.getenv("YTDLP_COOKIE_FILE")
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
         'no_warnings': True,
-        'cookiesfrombrowser': ('chrome',),
     }
+    if cookie_file:
+        ydl_opts['cookiefile'] = cookie_file
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)

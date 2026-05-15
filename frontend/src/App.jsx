@@ -10,6 +10,8 @@ function App() {
   const [audioUrl, setAudioUrl] = useState('')
   const [history, setHistory] = useState([])
   const audioRef = useRef(null)
+  
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001'
 
   useEffect(() => {
     try {
@@ -41,7 +43,7 @@ function App() {
 
   const fetchAudioUrl = async (sourceUrl) => {
     try {
-      const res = await fetch(`https://transcript-y3gciju2vq-ew.a.run.app/audio_url?url=${encodeURIComponent(sourceUrl)}`)
+      const res = await fetch(`${API_URL}/audio_url?url=${encodeURIComponent(sourceUrl)}`)
       if (res.ok) {
         const data = await res.json()
         setAudioUrl(data.url)
@@ -61,7 +63,7 @@ function App() {
     setAudioUrl('')
 
     try {
-      const response = await fetch('https://transcript-y3gciju2vq-ew.a.run.app/transcribe', {
+      const response = await fetch(`${API_URL}/transcribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
