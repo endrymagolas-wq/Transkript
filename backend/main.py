@@ -64,6 +64,7 @@ async def transcribe_instagram(request: TranscribeRequest):
         'quiet': True,
         'no_warnings': True,
         'outtmpl': os.path.join(temp_dir, '%(id)s.%(ext)s'),
+        'cookiesfrombrowser': ('chrome',),
     }
     
     try:
@@ -124,6 +125,7 @@ async def get_audio_url(url: str):
         'format': 'bestaudio/best',
         'quiet': True,
         'no_warnings': True,
+        'cookiesfrombrowser': ('chrome',),
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
