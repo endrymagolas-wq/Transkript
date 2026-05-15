@@ -82,6 +82,7 @@ async def transcribe_instagram(request: TranscribeRequest):
     # 2. Start transcription with AssemblyAI
     try:
         config = aai.TranscriptionConfig(
+            speech_model="universal-3-pro",
             speaker_labels=True,
             language_detection=True
         )
