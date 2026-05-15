@@ -117,6 +117,20 @@ async def transcribe_instagram(request: TranscribeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Transcription error: {str(e)}")
 
+@app.get("/audio_url")
+async def get_audio_url(url: str):
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'quiet': True,
+        'no_warnings': True,
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            return {"url": info.get('url', '')}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to get audio URL: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
