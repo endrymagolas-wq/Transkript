@@ -103,6 +103,12 @@ header p {
   margin-bottom: 1rem;
 }
 
+.supported-platforms {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 input {
   flex: 1;
   background: rgba(0, 0, 0, 0.3);

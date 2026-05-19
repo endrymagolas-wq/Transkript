@@ -1,5 +1,23 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import './App.css'
+
+const SUPPORTED_PLATFORMS = [
+  'Instagram Reels',
+  'TikTok',
+  'YouTube Shorts',
+  'Facebook Video',
+  'X/Twitter',
+  'та інші посилання, які підтримує yt-dlp',
+]
+
+const loadSavedHistory = () => {
+  try {
+    return JSON.parse(localStorage.getItem('transcriptionHistory') || '[]')
+  } catch (e) {
+    console.error('Failed to load history', e)
+    return []
+  }
+}
 
 function App() {
   const [url, setUrl] = useState('')
@@ -8,19 +26,10 @@ function App() {
   const [error, setError] = useState(null)
   
   const [audioUrl, setAudioUrl] = useState('')
-  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState(loadSavedHistory)
   const audioRef = useRef(null)
   
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001'
-
-  useEffect(() => {
-    try {
-      const savedHistory = JSON.parse(localStorage.getItem('transcriptionHistory') || '[]');
-      setHistory(savedHistory);
-    } catch (e) {
-      console.error('Failed to load history', e);
-    }
-  }, [])
 
   const saveToHistory = (sourceUrl, data) => {
     try {
@@ -129,8 +138,8 @@ function App() {
   return (
     <div className="App">
       <header>
-        <h1>InstaVoice</h1>
-        <p>Перетворіть Instagram Reels на текст із розподілом по спікерах</p>
+        <h1>Transkript</h1>
+        <p>Транскрибуйте TikTok, Instagram Reels та інші соцмережі з розподілом по спікерах</p>
       </header>
 
       <div className="input-container">
@@ -138,7 +147,7 @@ function App() {
           <div className="input-group">
             <input 
               type="text" 
-              placeholder="Вставте посилання на Instagram Reel..." 
+              placeholder="Вставте посилання на TikTok, Reel, Short або інше відео..." 
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               disabled={loading}
@@ -148,6 +157,9 @@ function App() {
             </button>
           </div>
         </form>
+        <p className="supported-platforms">
+          Підтримувані джерела: {SUPPORTED_PLATFORMS.join(' • ')}
+        </p>
       </div>
 
       <div className="main-content" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -200,7 +212,16 @@ function App() {
           {result && (
             <div className="transcript-container" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
               <div className="transcript-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-main)' }}>Результат транскрипції</h2>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-main)' }}>Результат транскрипції</h2>
+                  {(result.source_platform || result.source_title) && (
+                    <p style={{ marginTop: '0.5rem', color: 'var(--text-dim)', fontSize: '0.95rem' }}>
+                      {result.source_platform && <span>{result.source_platform}</span>}
+                      {result.source_platform && result.source_title && <span> • </span>}
+                      {result.source_title && <span>{result.source_title}</span>}
+                    </p>
+                  )}
+                </div>
                 <div className="action-buttons" style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
                   <button onClick={() => copyToClipboard(false)} style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px' }}>Копіювати текст</button>
                   <button onClick={() => copyToClipboard(true)} style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', background: 'linear-gradient(45deg, #10a37f, #0b7a5f)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(16, 163, 127, 0.3)' }}>Копіювати для ChatGPT</button>
